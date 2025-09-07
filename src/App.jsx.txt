@@ -1,0 +1,392 @@
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Mock data for demonstration
+const initialOrders = [];
+
+// Bank details mapping
+const paymentDetails = {
+  Gcash: "0917-123-4567",
+  Paymaya: "0918-234-5678",
+  Paypal: "paypal.me/printgo",
+  GoTyme: "Account No: 1234-5678-9012",
+};
+
+// Available print shops
+const printShops = ["Shop A", "Shop B", "Shop C"];
+
+export default function App() {
+  const [orders, setOrders] = useState(initialOrders);
+  const [fileName, setFileName] = useState("");
+  const [paperSize, setPaperSize] = useState("A4");
+  const [location, setLocation] = useState("");
+  const [quality, setQuality] = useState("Normal");
+  const [payment, setPayment] = useState("Gcash");
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [deliveryTime, setDeliveryTime] = useState("");
+  const [shop, setShop] = useState(printShops[0]);
+
+  // Student places an order
+  const placeOrder = () => {
+    if (!fileName || !location || !deliveryDate || !deliveryTime || !shop) return;
+    const newOrder = {
+      id: orders.length + 1,
+      fileName,
+      paperSize,
+      location,
+      quality,
+      payment,
+      deliveryDate,
+      deliveryTime,
+      shop,
+      status: "Pending",
+      assignedTo: null,
+    };
+    setOrders([...orders, newOrder]);
+    setFileName("");
+    setLocation("");
+    setDeliveryDate("");
+    setDeliveryTime("");
+    setShop(printShops[0]);
+  };
+
+  // Shop marks as printed
+  const markAsPrinted = (id) => {
+    setOrders(
+      orders.map((o) => (o.id === id ? { ...o, status: "Printed" } : o))
+    );
+  };
+
+  // Shop assigns courier
+  const assignToCourier = (id, courier) => {
+    setOrders(
+      orders.map((o) => (o.id === id ? { ...o, assignedTo: courier } : o))
+    );
+  };
+
+  // Courier marks delivered
+  const markAsDelivered = (id) => {
+    setOrders(
+      orders.map((o) => (o.id === id ? { ...o, status: "Delivered" } : o))
+    );
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("Payment detail copied: " + text);
+  };
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto grid gap-6">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-4xl font-bold mb-4 text-center"
+      >
+        INKSTANT – Student Printing Reservation & Delivery App
+      </motion.h1>
+
+      <Tabs defaultValue="student" className="w-full">
+        <TabsList className="grid grid-cols-3 w-full mb-6">
+          <TabsTrigger value="student">Student</TabsTrigger>
+          <TabsTrigger value="shop">Print Shop</TabsTrigger>
+          <TabsTrigger value="courier">Courier</TabsTrigger>
+        </TabsList>
+
+        {/* Student Interface */}
+        <TabsContent value="student">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Place a Reservation</h2>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Input
+                  type="file"
+                  onChange={(e) => setFileName(e.target.files[0]?.name || "")}
+                />
+
+                <Select value={paperSize} onValueChange={setPaperSize}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select paper size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A4">A4</SelectItem>
+                    <SelectItem value="Letter">Letter</SelectItem>
+                    <SelectItem value="Legal">Legal</SelectItem>
+                    <SelectItem value="A3">A3</SelectItem>
+                    <SelectItem value="B5">B5</SelectItem>
+                    <SelectItem value="Executive">Executive</SelectItem>
+                    <SelectItem value="Tabloid">Tabloid</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Input
+                  placeholder="Enter delivery location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+
+                <div className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={deliveryDate}
+                    onChange={(e) => setDeliveryDate(e.target.value)}
+                  />
+                  <Input
+                    type="time"
+                    value={deliveryTime}
+                    onChange={(e) => setDeliveryTime(e.target.value)}
+                  />
+                </div>
+
+                <Select value={quality} onValueChange={setQuality}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select quality" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Normal">Normal</SelectItem>
+                    <SelectItem value="Best">Best</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={payment} onValueChange={setPayment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Gcash">Gcash</SelectItem>
+                    <SelectItem value="Paymaya">Paymaya</SelectItem>
+                    <SelectItem value="Paypal">Paypal</SelectItem>
+                    <SelectItem value="GoTyme">GoTyme</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {payment && (
+                  <div className="text-sm text-gray-600 flex items-center gap-2">
+                    Send payment to: <strong>{paymentDetails[payment]}</strong>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyToClipboard(paymentDetails[payment])}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                )}
+
+                <Select value={shop} onValueChange={setShop}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select print shop" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {printShops.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button className="w-full" onClick={placeOrder}>
+                  Confirm Reservation
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">My Orders</h2>
+              </CardHeader>
+              <CardContent>
+                {orders.length === 0 ? (
+                  <p className="text-gray-500">No reservations yet.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {orders.map((o) => (
+                      <li
+                        key={o.id}
+                        className="p-3 rounded-lg border flex flex-col gap-1"
+                      >
+                        <span className="font-medium">{o.fileName}</span>
+                        <span className="text-sm text-gray-600">
+                          {o.status} {o.assignedTo && `(→ ${o.assignedTo})`}
+                        </span>
+                        <span className="text-xs text-gray-500">{o.location}</span>
+                        <span className="text-xs text-gray-500">Delivery: {o.deliveryDate} at {o.deliveryTime}</span>
+                        <span className="text-xs text-gray-500">Paper: {o.paperSize}, Quality: {o.quality}</span>
+                        <span className="text-xs text-gray-500">Shop: {o.shop}</span>
+                        <span className="text-xs text-gray-500 flex items-center gap-2">
+                          Payment: {o.payment} ({paymentDetails[o.payment]})
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            onClick={() => copyToClipboard(paymentDetails[o.payment])}
+                          >
+                            Copy
+                          </Button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Print Shop Interface */}
+        <TabsContent value="shop">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Incoming Orders</h2>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {orders
+                    .filter((o) => o.status === "Pending")
+                    .map((o) => (
+                      <li
+                        key={o.id}
+                        className="p-3 rounded-lg border flex justify-between items-center"
+                      >
+                        <div>
+                          <span className="font-medium">{o.fileName}</span>
+                          <p className="text-xs text-gray-500">{o.location}</p>
+                          <p className="text-xs text-gray-500">Delivery: {o.deliveryDate} at {o.deliveryTime}</p>
+                          <p className="text-xs text-gray-500">Paper: {o.paperSize}, {o.quality}</p>
+                          <p className="text-xs text-gray-500">Shop: {o.shop}</p>
+                          <p className="text-xs text-gray-500 flex items-center gap-2">
+                            Payment: {o.payment} ({paymentDetails[o.payment]})
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={() => copyToClipboard(paymentDetails[o.payment])}
+                            >
+                              Copy
+                            </Button>
+                          </p>
+                        </div>
+                        <Button size="sm" onClick={() => markAsPrinted(o.id)}>
+                          Mark as Printed
+                        </Button>
+                      </li>
+                    ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Ready for Delivery</h2>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {orders
+                    .filter((o) => o.status === "Printed" && !o.assignedTo)
+                    .map((o) => (
+                      <li
+                        key={o.id}
+                        className="p-3 rounded-lg border flex justify-between items-center"
+                      >
+                        <span>{o.fileName}</span>
+                        <Button size="sm" onClick={() => assignToCourier(o.id, "Courier 1")}>
+                          Assign Courier
+                        </Button>
+                      </li>
+                    ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Courier Interface */}
+        <TabsContent value="courier">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Assigned Deliveries</h2>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {orders
+                    .filter((o) => o.assignedTo === "Courier 1" && o.status === "Printed")
+                    .map((o) => (
+                      <li
+                        key={o.id}
+                        className="p-3 rounded-lg border flex justify-between items-center"
+                      >
+                        <div>
+                          <span className="font-medium">{o.fileName}</span>
+                          <p className="text-xs text-gray-500">{o.location}</p>
+                          <p className="text-xs text-gray-500">Delivery: {o.deliveryDate} at {o.deliveryTime}</p>
+                          <p className="text-xs text-gray-500">Paper: {o.paperSize}, {o.quality}</p>
+                          <p className="text-xs text-gray-500">Shop: {o.shop}</p>
+                          <p className="text-xs text-gray-500 flex items-center gap-2">
+                            Payment: {o.payment} ({paymentDetails[o.payment]})
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={() => copyToClipboard(paymentDetails[o.payment])}
+                            >
+                              Copy
+                            </Button>
+                          </p>
+                        </div>
+                        <Button size="sm" onClick={() => markAsDelivered(o.id)}>
+                          Mark Delivered
+                        </Button>
+                      </li>
+                    ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Completed Deliveries</h2>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {orders
+                    .filter((o) => o.assignedTo === "Courier 1" && o.status === "Delivered")
+                    .map((o) => (
+                      <li
+                        key={o.id}
+                        className="p-3 rounded-lg border flex justify-between items-center"
+                      >
+                        <div>
+                          <span className="font-medium">{o.fileName}</span>
+                          <p className="text-xs text-gray-500">{o.location}</p>
+                          <p className="text-xs text-gray-500">Delivery: {o.deliveryDate} at {o.deliveryTime}</p>
+                          <p className="text-xs text-gray-500">Paper: {o.paperSize}, {o.quality}</p>
+                          <p className="text-xs text-gray-500">Shop: {o.shop}</p>
+                          <p className="text-xs text-gray-500 flex items-center gap-2">
+                            Payment: {o.payment} ({paymentDetails[o.payment]})
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={() => copyToClipboard(paymentDetails[o.payment])}
+                            >
+                              Copy
+                            </Button>
+                          </p>
+                        </div>
+                        <span className="text-green-600 font-medium">Delivered</span>
+                      </li>
+                    ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
