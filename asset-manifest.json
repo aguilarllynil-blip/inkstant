@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/inkstant/static/css/main.e6c13ad2.css",
+    "main.js": "/inkstant/static/js/main.f12002ac.js",
+    "static/js/453.7d3b6434.chunk.js": "/inkstant/static/js/453.7d3b6434.chunk.js",
+    "index.html": "/inkstant/index.html",
+    "main.e6c13ad2.css.map": "/inkstant/static/css/main.e6c13ad2.css.map",
+    "main.f12002ac.js.map": "/inkstant/static/js/main.f12002ac.js.map",
+    "453.7d3b6434.chunk.js.map": "/inkstant/static/js/453.7d3b6434.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.f12002ac.js"
+  ]
+}
